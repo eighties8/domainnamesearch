@@ -6,7 +6,8 @@ import {
   Bars3Icon, 
   XMarkIcon, 
   SunIcon, 
-  MoonIcon 
+  MoonIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline'
 
 export default function Navigation() {
@@ -31,7 +32,7 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">D</span>
+              <GlobeAltIcon className="w-7 h-7 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">
               DomainNameSearch.app

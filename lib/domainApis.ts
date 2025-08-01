@@ -11,7 +11,7 @@ interface RegistrarPrices {
 }
 
 // Namecheap API
-export async function getNamecheapPrice(domain: string): Promise<DomainPrice | null> {
+export async function getNamecheapPrice(domain: string): Promise<DomainPrice | undefined> {
   try {
     const apiUser = process.env.NAMECHEAP_API_USER
     const apiKey = process.env.NAMECHEAP_API_KEY
@@ -19,7 +19,7 @@ export async function getNamecheapPrice(domain: string): Promise<DomainPrice | n
 
     if (!apiUser || !apiKey || !clientIp) {
       console.log('❌ Namecheap API credentials not configured')
-      return null
+      return undefined
     }
 
     const url = `https://api.sandbox.namecheap.com/xml.response?ApiUser=${apiUser}&ApiKey=${apiKey}&UserName=${apiUser}&Command=namecheap.domains.check&ClientIp=${clientIp}&DomainList=${domain}`
@@ -40,22 +40,22 @@ export async function getNamecheapPrice(domain: string): Promise<DomainPrice | n
       }
     }
 
-    return null
+    return undefined
   } catch (error) {
     console.error('❌ Namecheap API error:', error)
-    return null
+    return undefined
   }
 }
 
 // GoDaddy API
-export async function getGoDaddyPrice(domain: string): Promise<DomainPrice | null> {
+export async function getGoDaddyPrice(domain: string): Promise<DomainPrice | undefined> {
   try {
     const apiKey = process.env.GODADDY_API_KEY
     const apiSecret = process.env.GODADDY_API_SECRET
 
     if (!apiKey || !apiSecret) {
       console.log('❌ GoDaddy API credentials not configured')
-      return null
+      return undefined
     }
 
     const url = `https://api.godaddy.com/v1/domains/available?domain=${domain}`
@@ -69,7 +69,7 @@ export async function getGoDaddyPrice(domain: string): Promise<DomainPrice | nul
 
     if (!response.ok) {
       console.log(`❌ GoDaddy API error: ${response.status}`)
-      return null
+      return undefined
     }
 
     const data = await response.json()
@@ -91,19 +91,19 @@ export async function getGoDaddyPrice(domain: string): Promise<DomainPrice | nul
     }
   } catch (error) {
     console.error('❌ GoDaddy API error:', error)
-    return null
+    return undefined
   }
 }
 
 // Porkbun API
-export async function getPorkbunPrice(domain: string): Promise<DomainPrice | null> {
+export async function getPorkbunPrice(domain: string): Promise<DomainPrice | undefined> {
   try {
     const apiKey = process.env.PORKBUN_API_KEY
     const secretKey = process.env.PORKBUN_SECRET_KEY
 
     if (!apiKey || !secretKey) {
       console.log('❌ Porkbun API credentials not configured')
-      return null
+      return undefined
     }
 
     const url = 'https://porkbun.com/api/json/v3/domain/available'
@@ -122,7 +122,7 @@ export async function getPorkbunPrice(domain: string): Promise<DomainPrice | nul
 
     if (!response.ok) {
       console.log(`❌ Porkbun API error: ${response.status}`)
-      return null
+      return undefined
     }
 
     const data = await response.json()
@@ -144,7 +144,7 @@ export async function getPorkbunPrice(domain: string): Promise<DomainPrice | nul
     }
   } catch (error) {
     console.error('❌ Porkbun API error:', error)
-    return null
+    return undefined
   }
 }
 

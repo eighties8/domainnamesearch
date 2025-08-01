@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2025-08-01T22:27:02.937Z",
+  "lastUpdated": "2025-08-01T22:52:00.000Z",
   "prices": {
     "namecheap": {
       "com": {
-        "initial": "$34.98",
+        "initial": "$9.48",
         "renewal": "$13.98"
       },
       "io": {
@@ -11,12 +11,12 @@
         "renewal": "$39.98"
       },
       "app": {
-        "initial": "$34.98",
+        "initial": "$6.98",
         "renewal": "$17.98"
       },
       "ai": {
-        "initial": "$34.98",
-        "renewal": "$39.98"
+        "initial": "$89.98",
+        "renewal": "$92.98"
       },
       "co": {
         "initial": "$9.48",
@@ -45,8 +45,8 @@
         "renewal": "$19.99"
       },
       "io": {
-        "initial": "$29.99",
-        "renewal": "$39.99"
+        "initial": "$59.99",
+        "renewal": "$59.99"
       },
       "app": {
         "initial": "$9.99",
@@ -83,8 +83,8 @@
         "renewal": "$8.56"
       },
       "io": {
-        "initial": "$29.99",
-        "renewal": "$29.99"
+        "initial": "$28.12",
+        "renewal": "$46.65"
       },
       "app": {
         "initial": "$5.66",

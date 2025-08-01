@@ -42,6 +42,7 @@ export default function HomePage() {
       .toLowerCase()
       .trim()
       .replace(/\s+/g, '') // Remove all spaces
+      .split('.')[0] // Only take the part before the first dot
       .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
   }
 

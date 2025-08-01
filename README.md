@@ -76,7 +76,38 @@ Create a `.env.local` file:
 ```env
 # Optional: For Vercel cron endpoint
 CRON_SECRET=your-secret-token-here
+
+# Domain Registrar API Credentials (for real-time pricing)
+# Namecheap API (https://www.namecheap.com/support/api/)
+NAMECHEAP_API_USER=your_username
+NAMECHEAP_API_KEY=your_api_key
+NAMECHEAP_CLIENT_IP=your_ip_address
+
+# GoDaddy API (https://developer.godaddy.com/)
+GODADDY_API_KEY=your_api_key
+GODADDY_API_SECRET=your_api_secret
+
+# Porkbun API (https://porkbun.com/api/json/v3/documentation)
+PORKBUN_API_KEY=your_api_key
+PORKBUN_SECRET_KEY=your_secret_key
 ```
+
+### Getting API Credentials
+
+#### Namecheap
+1. Sign up for [Namecheap Affiliate Program](https://www.namecheap.com/affiliate/)
+2. Get API credentials from [Namecheap API](https://www.namecheap.com/support/api/)
+3. Use sandbox environment for testing
+
+#### GoDaddy
+1. Sign up for [GoDaddy Affiliate Program](https://www.godaddy.com/affiliate/)
+2. Get API credentials from [GoDaddy Developer Portal](https://developer.godaddy.com/)
+3. Use production API for real pricing
+
+#### Porkbun
+1. Sign up for [Porkbun Affiliate Program](https://porkbun.com/affiliate/)
+2. Get API credentials from [Porkbun API Documentation](https://porkbun.com/api/json/v3/documentation)
+3. Use production API for real pricing
 
 ## Deployment
 

@@ -18,10 +18,10 @@ const PRICE_FILE = path.join(__dirname, '../data/domainPrices.json')
 
 // Only check a few key TLDs to reduce load
 const KEY_TLDS = {
-  com: 'example.com',
-  io: 'example.io', 
-  app: 'example.app',
-  ai: 'example.ai'
+  com: 'startupdomain.com',
+  io: 'startupdomain.io', 
+  app: 'startupdomain.app',
+  ai: 'startupdomain.ai'
 }
 
 // Conservative user agent
@@ -46,10 +46,46 @@ async function scrapeNamecheapPrice(browser, tld) {
     // Wait for content to load
     await new Promise(resolve => setTimeout(resolve, 5000))
     
-    // Try to find price in page content
-    const priceData = await page.evaluate(() => {
+    // Try to find price in page content with better logic
+    const priceData = await page.evaluate((targetTld, searchDomain) => {
+      // Look for the specific domain price for this TLD
+      const domainName = searchDomain.split('.')[0] // e.g., "startupdomain" from "startupdomain.io"
+      const targetDomain = `${domainName}.${targetTld}` // e.g., "startupdomain.io"
+      
       // Look for price patterns in the entire page
       const allText = document.body.textContent
+      
+      // First, try to find the exact domain price by looking for the domain name
+      const domainRegex = new RegExp(`${targetDomain}.*?\\$\\d+\\.?\\d*`, 'gi')
+      const domainMatches = allText.match(domainRegex)
+      
+      if (domainMatches && domainMatches.length > 0) {
+        // Extract price from the domain match
+        const priceMatch = domainMatches[0].match(/\$(\d+\.?\d*)/)
+        if (priceMatch) {
+          const initialPrice = `$${priceMatch[1]}`
+          
+          // Look for renewal price near this domain
+          const renewalRegex = new RegExp(`renew.*?\\$\\d+\\.?\\d*`, 'gi')
+          const renewalMatches = allText.match(renewalRegex)
+          let renewalPrice = null
+          
+          if (renewalMatches && renewalMatches.length > 0) {
+            const renewalMatch = renewalMatches[0].match(/\$(\d+\.?\d*)/)
+            if (renewalMatch) {
+              renewalPrice = `$${renewalMatch[1]}`
+            }
+          }
+          
+          return {
+            initial: initialPrice,
+            renewal: renewalPrice,
+            allPrices: [initialPrice] // For debugging
+          }
+        }
+      }
+      
+      // Fallback: if we can't find the exact domain, look for prices in the main result area
       const priceMatches = allText.match(/\$\d+\.?\d*/g)
       
       if (priceMatches && priceMatches.length > 0) {
@@ -61,24 +97,44 @@ async function scrapeNamecheapPrice(browser, tld) {
         })
         
         if (domainPrices.length > 0) {
-          // Look for the main domain price (usually in the middle range)
-          // Sort by price and take the median or a price in the middle range
+          // Look for the main domain price for this specific TLD
+          // Sort by price and take a reasonable one (not the cheapest)
           domainPrices.sort((a, b) => parseFloat(a.replace('$', '')) - parseFloat(b.replace('$', '')))
           
-          // Take a price from the middle range (not the cheapest, not the most expensive)
-          const midIndex = Math.floor(domainPrices.length / 2)
-          const selectedPrice = domainPrices[midIndex]
+          // For .com domains, they're usually cheaper, so take a lower price
+          // For .io/.ai domains, they're more expensive, so take a higher price
+          let selectedIndex = Math.floor(domainPrices.length / 2)
+          
+          if (targetTld === 'com') {
+            // For .com, take a lower price (first 1/3)
+            selectedIndex = Math.floor(domainPrices.length / 3)
+          } else if (targetTld === 'io' || targetTld === 'ai') {
+            // For .io/.ai, take a higher price (last 1/3)
+            selectedIndex = Math.floor(domainPrices.length * 2 / 3)
+          }
+          
+          const selectedPrice = domainPrices[selectedIndex] || domainPrices[0]
+          
+          // Try to find renewal price - look for "renew" or "renews at" text
+          let renewalPrice = null
+          const renewalMatches = allText.match(/renew.*?\$(\d+\.?\d*)/gi)
+          if (renewalMatches && renewalMatches.length > 0) {
+            const renewalMatch = renewalMatches[0].match(/\$(\d+\.?\d*)/)
+            if (renewalMatch) {
+              renewalPrice = `$${renewalMatch[1]}`
+            }
+          }
           
           return {
             initial: selectedPrice,
-            renewal: null,
+            renewal: renewalPrice,
             allPrices: domainPrices // For debugging
           }
         }
       }
       
       return null
-    })
+    }, tld, domain)
     
     // Debug output
     if (priceData) {
@@ -125,9 +181,9 @@ async function updatePricesCron() {
       if (namecheapPrice && namecheapPrice.initial) {
         updatedPrices.prices.namecheap[tld] = {
           initial: namecheapPrice.initial,
-          renewal: updatedPrices.prices.namecheap[tld]?.renewal || '$13.98'
+          renewal: namecheapPrice.renewal || updatedPrices.prices.namecheap[tld]?.renewal || '$13.98'
         }
-        console.log(`✅ Namecheap .${tld}: ${namecheapPrice.initial}`)
+        console.log(`✅ Namecheap .${tld}: ${namecheapPrice.initial} (renewal: ${namecheapPrice.renewal || 'not found'})`)
         updatedCount++
       }
       

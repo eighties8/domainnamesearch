@@ -8,7 +8,7 @@ import { SearchDemandBadge } from './SearchDemandBadge'
 
 interface DomainResult {
   domain: string
-  availability: 'available' | 'taken'
+  availability: 'available' | 'taken' | 'loading'
   brandabilityScore: number
   estimatedValue: string
   searchDemand: SearchDemand | 'N/A'
@@ -28,7 +28,10 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
     setExpandedDomain(newExpandedDomain)
   }
 
-  const getAvailabilityIcon = (availability: 'available' | 'taken') => {
+  const getAvailabilityIcon = (availability: 'available' | 'taken' | 'loading') => {
+    if (availability === 'loading') {
+      return <div className="w-5 h-5 animate-spin rounded-full border-2 border-gray-300 border-t-primary-600"></div>
+    }
     return availability === 'available' ? (
       <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
     ) : (
@@ -36,11 +39,13 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
     )
   }
 
-  const getAvailabilityText = (availability: 'available' | 'taken') => {
+  const getAvailabilityText = (availability: 'available' | 'taken' | 'loading') => {
+    if (availability === 'loading') return 'Loading...'
     return availability === 'available' ? 'Available' : 'Taken'
   }
 
-  const getAvailabilityColor = (availability: 'available' | 'taken') => {
+  const getAvailabilityColor = (availability: 'available' | 'taken' | 'loading') => {
+    if (availability === 'loading') return 'text-gray-500 dark:text-gray-400'
     return availability === 'available' 
       ? 'text-green-600 dark:text-green-400' 
       : 'text-red-600 dark:text-red-400'
@@ -68,6 +73,28 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
     })
   }
 
+  const getFavicon = (domain: string) => {
+    // Use DuckDuckGo's favicon service which is more reliable
+    return `https://icons.duckduckgo.com/ip3/${domain}.ico`
+  }
+
+  const getDomainAge = (createdDate: string) => {
+    const created = new Date(createdDate)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - created.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffYears = Math.floor(diffDays / 365)
+    const diffMonths = Math.floor((diffDays % 365) / 30)
+    
+    if (diffYears > 0) {
+      return `${diffYears} year${diffYears > 1 ? 's' : ''}`
+    } else if (diffMonths > 0) {
+      return `${diffMonths} month${diffMonths > 1 ? 's' : ''}`
+    } else {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''}`
+    }
+  }
+
   return (
     <div className="space-y-4">
       
@@ -79,7 +106,7 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
       </div>
 
       {/* Desktop Table */}
-      <div className="block space-y-6">
+      <div className="hidden lg:block space-y-6">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -96,9 +123,33 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
               {domainResults.map((result, index) => (
                 <>
                   <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-4 px-4">
+                                      <td className="py-4 px-4">
+                    {result.availability === 'taken' ? (
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={getFavicon(result.domain)}
+                          alt={`${result.domain} favicon`}
+                          className="w-6 h-6 rounded"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                        <div>
+                          <a 
+                            href={`https://${result.domain}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline"
+                          >
+                            {result.domain}
+                          </a>
+
+                        </div>
+                      </div>
+                    ) : (
                       <span className="font-medium text-gray-900 dark:text-white">{result.domain}</span>
-                    </td>
+                    )}
+                  </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         {getAvailabilityIcon(result.availability)}
@@ -219,7 +270,31 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
           <div key={index} className="card p-4">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{result.domain}</h3>
+                {result.availability === 'taken' ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={getFavicon(result.domain)}
+                        alt={`${result.domain} favicon`}
+                        className="w-5 h-5 rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                      <a 
+                        href={`https://${result.domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline"
+                      >
+                        {result.domain}
+                      </a>
+                    </div>
+
+                  </div>
+                ) : (
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{result.domain}</h3>
+                )}
                 <div className="flex items-center gap-2 mt-1">
                   {getAvailabilityIcon(result.availability)}
                   <span className={getAvailabilityColor(result.availability)}>
@@ -287,7 +362,7 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
             </div>
             
             {/* Mobile Expanded Price Comparison */}
-            {expandedDomain === result.domain && (
+            {expandedDomain === result.domain && result.availability === 'available' && (
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Price Comparison for {result.domain}

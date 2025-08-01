@@ -8,7 +8,7 @@ import { getSearchDemandLabel, SearchDemand } from '../lib/searchDemandUtils'
 
 interface DomainResult {
   domain: string
-  availability: 'available' | 'taken'
+  availability: 'available' | 'taken' | 'loading'
   brandabilityScore: number
   estimatedValue: string
   searchDemand: SearchDemand | 'N/A'
@@ -34,6 +34,8 @@ export default function HomePage() {
       return false
     }
   }
+
+
 
   const cleanDomainName = (name: string): string => {
     return name
@@ -76,7 +78,7 @@ export default function HomePage() {
     
     const newResults: DomainResult[] = domainSuggestions.map(domain => ({
       domain,
-      availability: 'taken', // Will be updated after checking
+      availability: 'loading', // Will be updated after checking
       brandabilityScore: calculateBrandabilityScore(domain, domain.split('.')[1]),
       estimatedValue: '$0', // Will be updated after checking
       searchDemand: 'Low' // Will be updated after checking
@@ -84,7 +86,7 @@ export default function HomePage() {
 
     setResults(newResults)
 
-    // Check availability and search demand for all domains first
+    // Check availability first (fast)
     const availabilityResults = await Promise.all(
       newResults.map(async (result) => {
         const available = await checkDomainAvailability(result.domain)
@@ -107,7 +109,7 @@ export default function HomePage() {
       })
     )
 
-    // Update state once with all results
+    // Update state with results
     setResults(sortResults(availabilityResults))
     setLoading(false)
   }

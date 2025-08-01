@@ -1,0 +1,65 @@
+[
+  {
+    "tld": "com",
+    "name": ".com",
+    "price": 12.99,
+    "popularity": 10,
+    "brandability": 10
+  },
+  {
+    "tld": "net",
+    "name": ".net",
+    "price": 14.99,
+    "popularity": 7,
+    "brandability": 8
+  },
+  {
+    "tld": "io",
+    "name": ".io",
+    "price": 29.99,
+    "popularity": 9,
+    "brandability": 9
+  },
+  {
+    "tld": "app",
+    "name": ".app",
+    "price": 19.99,
+    "popularity": 8,
+    "brandability": 8
+  },
+  {
+    "tld": "ai",
+    "name": ".ai",
+    "price": 39.99,
+    "popularity": 9,
+    "brandability": 9
+  },
+  {
+    "tld": "co",
+    "name": ".co",
+    "price": 24.99,
+    "popularity": 8,
+    "brandability": 8
+  },
+  {
+    "tld": "dev",
+    "name": ".dev",
+    "price": 19.99,
+    "popularity": 7,
+    "brandability": 7
+  },
+  {
+    "tld": "tech",
+    "name": ".tech",
+    "price": 24.99,
+    "popularity": 6,
+    "brandability": 6
+  },
+  {
+    "tld": "xyz",
+    "name": ".xyz",
+    "price": 9.99,
+    "popularity": 5,
+    "brandability": 5
+  }
+] 

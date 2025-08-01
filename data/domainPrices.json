@@ -1,0 +1,119 @@
+{
+  "lastUpdated": "2025-08-01T03:00:00.000Z",
+  "prices": {
+    "namecheap": {
+      "com": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      },
+      "io": {
+        "initial": "$29.98",
+        "renewal": "$39.98"
+      },
+      "app": {
+        "initial": "$6.98",
+        "renewal": "$17.98"
+      },
+      "ai": {
+        "initial": "$29.98",
+        "renewal": "$39.98"
+      },
+      "co": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      },
+      "dev": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      },
+      "tech": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      },
+      "net": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      },
+      "xyz": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
+      }
+    },
+    "godaddy": {
+      "com": {
+        "initial": "$1.99",
+        "renewal": "$19.99"
+      },
+      "io": {
+        "initial": "$29.99",
+        "renewal": "$39.99"
+      },
+      "app": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
+      },
+      "ai": {
+        "initial": "$29.99",
+        "renewal": "$39.99"
+      },
+      "co": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
+      },
+      "dev": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
+      },
+      "tech": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
+      },
+      "net": {
+        "initial": "$1.99",
+        "renewal": "$19.99"
+      },
+      "xyz": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
+      }
+    },
+    "porkbun": {
+      "com": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "io": {
+        "initial": "$29.99",
+        "renewal": "$29.99"
+      },
+      "app": {
+        "initial": "$5.66",
+        "renewal": "$14.93"
+      },
+      "ai": {
+        "initial": "$29.99",
+        "renewal": "$29.99"
+      },
+      "co": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "dev": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "tech": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "net": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "xyz": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      }
+    }
+  }
+}

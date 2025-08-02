@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckCircleIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { getDomainPrices, DomainPrice, getLastUpdated } from '../lib/priceUtils'
 import { SearchDemand } from '../lib/searchDemandUtils'
 import { SearchDemandBadge } from './SearchDemandBadge'
+import CelebrationIcon from './CelebrationIcon'
+import AvailableDomainIcon from './AvailableDomainIcon'
 
 interface DomainResult {
   domain: string
@@ -20,6 +22,30 @@ interface DomainResultsTableProps {
 
 export default function DomainResultsTable({ domainResults }: DomainResultsTableProps) {
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null)
+  const [celebratingDomains, setCelebratingDomains] = useState<Set<string>>(new Set())
+  const [previousResults, setPreviousResults] = useState<DomainResult[]>([])
+
+  // Track when domains become available for celebration
+  useEffect(() => {
+    const newCelebrating = new Set<string>()
+    
+    domainResults.forEach(result => {
+      const previousResult = previousResults.find(prev => prev.domain === result.domain)
+      if (previousResult?.availability === 'loading' && result.availability === 'available') {
+        newCelebrating.add(result.domain)
+      }
+    })
+    
+    if (newCelebrating.size > 0) {
+      setCelebratingDomains(newCelebrating)
+      // Clear celebration after 3 seconds
+      setTimeout(() => {
+        setCelebratingDomains(new Set())
+      }, 3000)
+    }
+    
+    setPreviousResults(domainResults)
+  }, [domainResults, previousResults])
 
   const toggleExpansion = (domain: string) => {
     console.log('Toggle expansion for domain:', domain, 'Current expanded:', expandedDomain)
@@ -95,6 +121,45 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
     }
   }
 
+  const getLowestPrice = (domain: string, availability: 'available' | 'taken' | 'loading') => {
+    if (availability === 'taken') return 'N/A'
+    
+    const domainPrices = getDomainPrices(domain)
+    const initialPrices = domainPrices.map(price => price.initial).filter(price => price && price !== '$0')
+    
+    if (initialPrices.length === 0) return 'N/A'
+    
+    const numericPrices = initialPrices.map(price => 
+      parseFloat(price.replace('$', '') || '0')
+    ).filter(price => price > 0)
+    
+    if (numericPrices.length === 0) return 'N/A'
+    
+    const lowest = Math.min(...numericPrices)
+    return `$${lowest.toFixed(2)}`
+  }
+
+  const getPriceRange = (domain: string, availability: 'available' | 'taken' | 'loading') => {
+    if (availability === 'taken') return 'N/A'
+    
+    const domainPrices = getDomainPrices(domain)
+    const initialPrices = domainPrices.map(price => price.initial).filter(price => price && price !== '$0')
+    
+    if (initialPrices.length === 0) return 'N/A'
+    
+    const numericPrices = initialPrices.map(price => 
+      parseFloat(price.replace('$', '') || '0')
+    ).filter(price => price > 0)
+    
+    if (numericPrices.length === 0) return 'N/A'
+    
+    const lowest = Math.min(...numericPrices)
+    const highest = Math.max(...numericPrices)
+    
+    if (lowest === highest) return `$${lowest.toFixed(2)}`
+    return `$${lowest.toFixed(2)} - $${highest.toFixed(2)}`
+  }
+
   return (
     <div className="space-y-4">
       
@@ -113,9 +178,8 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Domain</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Availability</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Brandability</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Est. Value</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Search Demand</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Lowest Price</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Price Range</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Action</th>
               </tr>
             </thead>
@@ -143,11 +207,25 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           >
                             {result.domain}
                           </a>
-
                         </div>
                       </div>
                     ) : (
-                      <span className="font-medium text-gray-900 dark:text-white">{result.domain}</span>
+                      <div className="flex items-center gap-3">
+                        {result.availability === 'available' ? (
+                          <AvailableDomainIcon domain={result.domain} />
+                        ) : (
+                          <div className="w-6 h-6 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                            <div className="w-3 h-3 bg-gray-400 dark:bg-gray-500 rounded-full animate-pulse"></div>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">{result.domain}</span>
+                          <CelebrationIcon 
+                            isVisible={celebratingDomains.has(result.domain)} 
+                            className="ml-1"
+                          />
+                        </div>
+                      </div>
                     )}
                   </td>
                     <td className="py-4 px-4">
@@ -159,37 +237,22 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      {result.brandabilityScore === 0 ? (
-                        <span className="text-gray-400 dark:text-gray-500 text-sm">N/A</span>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-primary-600 h-2 rounded-full" 
-                              style={{ width: `${(result.brandabilityScore / 10) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {result.brandabilityScore}/10
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-4 px-4">
                       <span className={`font-medium ${
-                        result.estimatedValue === 'N/A' 
+                        getLowestPrice(result.domain, result.availability) === 'N/A' 
                           ? 'text-gray-400 dark:text-gray-500' 
-                          : 'text-gray-900 dark:text-white'
+                          : 'text-green-600 dark:text-green-400'
                       }`}>
-                        {result.estimatedValue}
+                        {getLowestPrice(result.domain, result.availability)}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      {result.searchDemand === 'N/A' ? (
-                        <span className="text-gray-400 dark:text-gray-500 text-sm">N/A</span>
-                      ) : (
-                        <SearchDemandBadge demand={result.searchDemand} />
-                      )}
+                      <span className={`font-medium ${
+                        getPriceRange(result.domain, result.availability) === 'N/A' 
+                          ? 'text-gray-400 dark:text-gray-500' 
+                          : 'text-gray-900 dark:text-white'
+                      }`}>
+                        {getPriceRange(result.domain, result.availability)}
+                      </span>
                     </td>
                     <td className="py-4 px-4">
                       <button
@@ -293,7 +356,22 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
 
                   </div>
                 ) : (
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{result.domain}</h3>
+                  <div className="flex items-center gap-2">
+                    {result.availability === 'available' ? (
+                      <AvailableDomainIcon domain={result.domain} />
+                    ) : (
+                      <div className="w-5 h-5 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-pulse"></div>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full border border-green-200 dark:border-green-700">{result.domain}</h3>
+                      <CelebrationIcon 
+                        isVisible={celebratingDomains.has(result.domain)} 
+                        className="ml-1"
+                      />
+                    </div>
+                  </div>
                 )}
                 <div className="flex items-center gap-2 mt-1">
                   {getAvailabilityIcon(result.availability)}
@@ -322,41 +400,23 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-600 dark:text-gray-400">Brandability:</span>
-                {result.brandabilityScore === 0 ? (
-                  <div className="text-gray-400 dark:text-gray-500 text-sm mt-1">N/A</div>
-                ) : (
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-primary-600 h-2 rounded-full" 
-                        style={{ width: `${(result.brandabilityScore / 10) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">
-                      {result.brandabilityScore}/10
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Est. Value:</span>
+                <span className="text-gray-600 dark:text-gray-400">Lowest Price:</span>
                 <div className={`font-medium mt-1 ${
-                  result.estimatedValue === 'N/A' 
+                  getLowestPrice(result.domain, result.availability) === 'N/A' 
                     ? 'text-gray-400 dark:text-gray-500' 
-                    : 'text-gray-900 dark:text-white'
+                    : 'text-green-600 dark:text-green-400'
                 }`}>
-                  {result.estimatedValue}
+                  {getLowestPrice(result.domain, result.availability)}
                 </div>
               </div>
               <div>
-                <span className="text-gray-600 dark:text-gray-400">Search Demand:</span>
-                <div className="mt-1">
-                  {result.searchDemand === 'N/A' ? (
-                    <span className="text-gray-400 dark:text-gray-500 text-sm">N/A</span>
-                  ) : (
-                    <SearchDemandBadge demand={result.searchDemand} />
-                  )}
+                <span className="text-gray-600 dark:text-gray-400">Price Range:</span>
+                <div className={`font-medium mt-1 ${
+                  getPriceRange(result.domain, result.availability) === 'N/A' 
+                    ? 'text-gray-400 dark:text-gray-500' 
+                    : 'text-gray-900 dark:text-white'
+                }`}>
+                  {getPriceRange(result.domain, result.availability)}
                 </div>
               </div>
             </div>

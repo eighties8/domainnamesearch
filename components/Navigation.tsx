@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   Bars3Icon, 
@@ -13,6 +13,24 @@ import {
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Check if it's night time (6 PM to 6 AM)
+  const isNightTime = () => {
+    const hour = new Date().getHours()
+    return hour >= 18 || hour < 6
+  }
+
+  // Initialize dark mode based on time of day
+  useEffect(() => {
+    const shouldBeDark = isNightTime()
+    setIsDarkMode(shouldBeDark)
+    
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)

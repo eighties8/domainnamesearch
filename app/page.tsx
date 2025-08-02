@@ -161,7 +161,7 @@ export default function HomePage() {
               </div>
             </form>
 
-            {/* Example searches */}
+            {/* Example searches
             <div className="mt-6">
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Try these examples:</p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -175,7 +175,7 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -219,7 +219,12 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           </div>
                         )}
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">{result.domain}</span>
+                          <button
+                            onClick={() => toggleExpansion(result.domain)}
+                            className="font-medium text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full border border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors duration-200 cursor-pointer"
+                          >
+                            {result.domain}
+                          </button>
                           <CelebrationIcon 
                             isVisible={celebratingDomains.has(result.domain)} 
                             className="ml-1"
@@ -365,7 +370,12 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                       </div>
                     )}
                     <div className="flex items-center gap-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full border border-green-200 dark:border-green-700">{result.domain}</h3>
+                      <button
+                        onClick={() => toggleExpansion(result.domain)}
+                        className="font-semibold text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full border border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors duration-200 cursor-pointer"
+                      >
+                        {result.domain}
+                      </button>
                       <CelebrationIcon 
                         isVisible={celebratingDomains.has(result.domain)} 
                         className="ml-1"

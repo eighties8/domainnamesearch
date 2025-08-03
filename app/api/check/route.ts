@@ -41,10 +41,10 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     // If DNS resolution fails, we need to be more careful
     const tld = domain.split('.').pop()?.toLowerCase()
-    const newerTLDs = ['io', 'app', 'ai', 'dev', 'tech', 'xyz']
+    const newerTLDs = ['io', 'app', 'ai', 'dev', 'tech', 'xyz', 'org']
     
     if (error.code === 'ENOTFOUND' && newerTLDs.includes(tld || '')) {
-      // For newer TLDs, ENOTFOUND is more likely to mean available
+      // For newer TLDs and .org, ENOTFOUND is more likely to mean available
       return NextResponse.json({ 
         domain, 
         available: true,

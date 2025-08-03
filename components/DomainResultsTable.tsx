@@ -14,6 +14,12 @@ interface DomainResult {
   brandabilityScore: number
   estimatedValue: string
   searchDemand: SearchDemand | 'N/A'
+  domainInfo?: {
+    registrationDate: string | null
+    hasAutoRenewal: boolean
+    age: number | null
+    daysUntilExpiration?: number | null
+  }
 }
 
 interface DomainResultsTableProps {
@@ -102,6 +108,39 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
   const getFavicon = (domain: string) => {
     // Use DuckDuckGo's favicon service which is more reliable
     return `https://icons.duckduckgo.com/ip3/${domain}.ico`
+  }
+
+  const formatDomainInfo = (domainInfo: any) => {
+    if (!domainInfo) return null
+    
+    const formatDate = (dateString: string | null) => {
+      if (!dateString) return 'Unknown'
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    }
+    
+    const formatAge = (age: number | null) => {
+      if (!age) return 'Unknown'
+      return `${age} year${age === 1 ? '' : 's'}`
+    }
+    
+    const formatExpiration = (daysUntilExpiration: number | null) => {
+      if (!daysUntilExpiration) return 'Unknown'
+      if (daysUntilExpiration < 0) return 'Expired'
+      if (daysUntilExpiration < 30) return `${daysUntilExpiration} days`
+      if (daysUntilExpiration < 365) return `${Math.floor(daysUntilExpiration / 30)} months`
+      return `${Math.floor(daysUntilExpiration / 365)} years`
+    }
+    
+    return {
+      registrationDate: formatDate(domainInfo.registrationDate),
+      hasAutoRenewal: domainInfo.hasAutoRenewal,
+      age: formatAge(domainInfo.age),
+      daysUntilExpiration: domainInfo.daysUntilExpiration ? formatExpiration(domainInfo.daysUntilExpiration) : null
+    }
   }
 
   const getDomainAge = (createdDate: string) => {
@@ -207,6 +246,19 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           >
                             {result.domain}
                           </a>
+                          {result.domainInfo && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <div className="flex items-center gap-4">
+                                <span>Age: {formatDomainInfo(result.domainInfo)?.age || 'Unknown'}</span>
+                                {formatDomainInfo(result.domainInfo)?.daysUntilExpiration && (
+                                  <span>Expires: {formatDomainInfo(result.domainInfo)?.daysUntilExpiration}</span>
+                                )}
+                                {formatDomainInfo(result.domainInfo)?.hasAutoRenewal && (
+                                  <span className="text-green-600 dark:text-green-400">Auto-renewal</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -242,22 +294,30 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`font-medium ${
-                        getLowestPrice(result.domain, result.availability) === 'N/A' 
-                          ? 'text-gray-400 dark:text-gray-500' 
-                          : 'text-green-600 dark:text-green-400'
-                      }`}>
-                        {getLowestPrice(result.domain, result.availability)}
-                      </span>
+                      {result.availability === 'loading' ? (
+                        <span className="text-gray-500 dark:text-gray-400">Loading...</span>
+                      ) : (
+                        <span className={`font-medium ${
+                          getLowestPrice(result.domain, result.availability) === 'N/A' 
+                            ? 'text-gray-400 dark:text-gray-500' 
+                            : 'text-green-600 dark:text-green-400'
+                        }`}>
+                          {getLowestPrice(result.domain, result.availability)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`font-medium ${
-                        getPriceRange(result.domain, result.availability) === 'N/A' 
-                          ? 'text-gray-400 dark:text-gray-500' 
-                          : 'text-gray-900 dark:text-white'
-                      }`}>
-                        {getPriceRange(result.domain, result.availability)}
-                      </span>
+                      {result.availability === 'loading' ? (
+                        <span className="text-gray-500 dark:text-gray-400">Loading...</span>
+                      ) : (
+                        <span className={`font-medium ${
+                          getPriceRange(result.domain, result.availability) === 'N/A' 
+                            ? 'text-gray-400 dark:text-gray-500' 
+                            : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {getPriceRange(result.domain, result.availability)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-4 px-4">
                       <button
@@ -358,7 +418,25 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                         {result.domain}
                       </a>
                     </div>
-
+                    {result.domainInfo && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Age:</span>
+                          <span>{formatDomainInfo(result.domainInfo)?.age || 'Unknown'}</span>
+                        </div>
+                        {formatDomainInfo(result.domainInfo)?.daysUntilExpiration && (
+                          <div className="flex justify-between">
+                            <span>Expires:</span>
+                            <span>{formatDomainInfo(result.domainInfo)?.daysUntilExpiration}</span>
+                          </div>
+                        )}
+                        {formatDomainInfo(result.domainInfo)?.hasAutoRenewal && (
+                          <div className="text-green-600 dark:text-green-400 text-center">
+                            Auto-renewal enabled
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -412,21 +490,31 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Lowest Price:</span>
                 <div className={`font-medium mt-1 ${
-                  getLowestPrice(result.domain, result.availability) === 'N/A' 
-                    ? 'text-gray-400 dark:text-gray-500' 
-                    : 'text-green-600 dark:text-green-400'
+                  result.availability === 'loading' 
+                    ? 'text-gray-500 dark:text-gray-400'
+                    : getLowestPrice(result.domain, result.availability) === 'N/A' 
+                      ? 'text-gray-400 dark:text-gray-500' 
+                      : 'text-green-600 dark:text-green-400'
                 }`}>
-                  {getLowestPrice(result.domain, result.availability)}
+                  {result.availability === 'loading' 
+                    ? 'Loading...' 
+                    : getLowestPrice(result.domain, result.availability)
+                  }
                 </div>
               </div>
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Price Range:</span>
                 <div className={`font-medium mt-1 ${
-                  getPriceRange(result.domain, result.availability) === 'N/A' 
-                    ? 'text-gray-400 dark:text-gray-500' 
-                    : 'text-gray-900 dark:text-white'
+                  result.availability === 'loading' 
+                    ? 'text-gray-500 dark:text-gray-400'
+                    : getPriceRange(result.domain, result.availability) === 'N/A' 
+                      ? 'text-gray-400 dark:text-gray-500' 
+                      : 'text-gray-900 dark:text-white'
                 }`}>
-                  {getPriceRange(result.domain, result.availability)}
+                  {result.availability === 'loading' 
+                    ? 'Loading...' 
+                    : getPriceRange(result.domain, result.availability)
+                  }
                 </div>
               </div>
             </div>

@@ -61,5 +61,12 @@
     "price": 9.99,
     "popularity": 5,
     "brandability": 5
+  },
+  {
+    "tld": "org",
+    "name": ".org",
+    "price": 14.99,
+    "popularity": 8,
+    "brandability": 8
   }
 ] 

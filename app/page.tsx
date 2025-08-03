@@ -12,6 +12,12 @@ interface DomainResult {
   brandabilityScore: number
   estimatedValue: string
   searchDemand: SearchDemand | 'N/A'
+  domainInfo?: {
+    registrationDate: string | null
+    hasAutoRenewal: boolean
+    age: number | null
+    daysUntilExpiration?: number | null
+  }
 }
 
 export default function HomePage() {
@@ -32,6 +38,20 @@ export default function HomePage() {
     } catch (error) {
       console.error('Error checking domain:', error)
       return false
+    }
+  }
+
+  const getDomainInfo = async (domain: string) => {
+    try {
+      const response = await fetch(`/api/domainInfo?domain=${domain}`)
+      if (!response.ok) {
+        return null
+      }
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching domain info:', error)
+      return null
     }
   }
 
@@ -100,12 +120,19 @@ export default function HomePage() {
         const domainName = result.domain.split('.')[0]
         const searchDemand: SearchDemand | 'N/A' = available ? await getSearchDemandLabel(domainName) : 'N/A'
         
+        // Fetch domain info for taken domains
+        let domainInfo = null
+        if (!available) {
+          domainInfo = await getDomainInfo(result.domain)
+        }
+        
         return {
           ...result,
           availability: available ? 'available' as const : 'taken' as const,
           brandabilityScore: available ? brandabilityScore : 0,
           estimatedValue: available ? `$${estimatedValue.toLocaleString()}` : 'N/A',
-          searchDemand
+          searchDemand,
+          domainInfo
         }
       })
     )

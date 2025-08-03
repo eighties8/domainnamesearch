@@ -47,6 +47,8 @@ export default function AvailableDomainIcon({ domain, className = '' }: Availabl
         return CommandLineIcon
       case 'xyz':
         return SparklesIcon
+      case 'org':
+        return AcademicCapIcon
       default:
         return HeartIcon
     }

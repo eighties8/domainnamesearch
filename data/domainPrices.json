@@ -37,6 +37,10 @@
       "xyz": {
         "initial": "$9.48",
         "renewal": "$13.98"
+      },
+      "org": {
+        "initial": "$9.48",
+        "renewal": "$13.98"
       }
     },
     "godaddy": {
@@ -75,6 +79,10 @@
       "xyz": {
         "initial": "$9.99",
         "renewal": "$27.99"
+      },
+      "org": {
+        "initial": "$9.99",
+        "renewal": "$27.99"
       }
     },
     "porkbun": {
@@ -111,6 +119,10 @@
         "renewal": "$8.56"
       },
       "xyz": {
+        "initial": "$8.56",
+        "renewal": "$8.56"
+      },
+      "org": {
         "initial": "$8.56",
         "renewal": "$8.56"
       }

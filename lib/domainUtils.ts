@@ -92,6 +92,7 @@ export function calculateEstimatedValue(domain: string): number {
 // Generate domain suggestions
 export function generateDomainSuggestions(baseName: string): string[] {
   const tlds = tldData.map(t => t.tld)
+  console.log('Available TLDs:', tlds) // Debug log
   return tlds.map(tld => `${baseName}.${tld}`)
 }
 

@@ -97,7 +97,14 @@ export default function HomePage() {
     const baseName = cleanDomainName(searchTerm)
     const domainSuggestions = generateDomainSuggestions(baseName)
     
-    const newResults: DomainResult[] = domainSuggestions.map(domain => ({
+    // Debug: Log the generated domains
+    console.log('Generated domains:', domainSuggestions)
+    
+    // Remove duplicates from domain suggestions
+    const uniqueDomains = Array.from(new Set(domainSuggestions))
+    console.log('Unique domains:', uniqueDomains)
+    
+    const newResults: DomainResult[] = uniqueDomains.map(domain => ({
       domain,
       availability: 'loading', // Will be updated after checking
       brandabilityScore: calculateBrandabilityScore(domain, domain.split('.')[1]),
@@ -137,16 +144,23 @@ export default function HomePage() {
         
         // Update the specific result in the state
         setResults(prevResults => {
+          // Ensure we don't create duplicates by checking if the domain already exists
+          const existingIndex = prevResults.findIndex(r => r.domain === result.domain)
+          const targetIndex = existingIndex !== -1 ? existingIndex : index
+          
           const newResults = [...prevResults]
-          newResults[index] = updatedResult
+          newResults[targetIndex] = updatedResult
           return sortResults(newResults)
         })
       } catch (error) {
         console.error(`Error checking domain ${result.domain}:`, error)
         // Mark as taken if there's an error
         setResults(prevResults => {
+          const existingIndex = prevResults.findIndex(r => r.domain === result.domain)
+          const targetIndex = existingIndex !== -1 ? existingIndex : index
+          
           const newResults = [...prevResults]
-          newResults[index] = {
+          newResults[targetIndex] = {
             ...result,
             availability: 'taken' as const,
             brandabilityScore: 0,

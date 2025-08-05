@@ -12,8 +12,13 @@ export async function GET(request: NextRequest) {
 
   // Use a more reliable approach - check if domain exists in DNS hierarchy
   try {
-    // Try to resolve A records
-    const aRecords = await resolve4(domain)
+    // Try to resolve A records with timeout
+    const aRecords = await Promise.race([
+      resolve4(domain),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('DNS_TIMEOUT')), 5000)
+      )
+    ]) as string[]
     
     // Check if the resolved IP is a known parking/hijacking IP
     const parkingIPs = [
@@ -22,7 +27,7 @@ export async function GET(request: NextRequest) {
       '127.0.0.1'
     ]
     
-    const isParkingIP = aRecords.some(ip => parkingIPs.includes(ip))
+    const isParkingIP = aRecords.some((ip: string) => parkingIPs.includes(ip))
     
     if (isParkingIP) {
       return NextResponse.json({ 
@@ -39,6 +44,15 @@ export async function GET(request: NextRequest) {
       message: 'Domain is already registered (has A records)'
     })
   } catch (error: any) {
+    // Handle timeout specifically
+    if (error.message === 'DNS_TIMEOUT') {
+      return NextResponse.json({ 
+        domain, 
+        available: false,
+        message: 'DNS lookup timed out - assuming taken'
+      })
+    }
+    
     // If DNS resolution fails, we need to be more careful
     const tld = domain.split('.').pop()?.toLowerCase()
     const newerTLDs = ['io', 'app', 'ai', 'dev', 'tech', 'xyz', 'org']

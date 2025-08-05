@@ -107,9 +107,9 @@ export default function HomePage() {
 
     setResults(newResults)
 
-    // Check availability first (fast)
-    const availabilityResults = await Promise.all(
-      newResults.map(async (result) => {
+    // Check availability for each domain and update state immediately
+    newResults.forEach(async (result, index) => {
+      try {
         const available = await checkDomainAvailability(result.domain)
         
         // Only calculate values for available domains
@@ -126,7 +126,7 @@ export default function HomePage() {
           domainInfo = await getDomainInfo(result.domain)
         }
         
-        return {
+        const updatedResult = {
           ...result,
           availability: available ? 'available' as const : 'taken' as const,
           brandabilityScore: available ? brandabilityScore : 0,
@@ -134,12 +134,32 @@ export default function HomePage() {
           searchDemand,
           domainInfo
         }
-      })
-    )
-
-    // Update state with results
-    setResults(sortResults(availabilityResults))
-    setLoading(false)
+        
+        // Update the specific result in the state
+        setResults(prevResults => {
+          const newResults = [...prevResults]
+          newResults[index] = updatedResult
+          return sortResults(newResults)
+        })
+      } catch (error) {
+        console.error(`Error checking domain ${result.domain}:`, error)
+        // Mark as taken if there's an error
+        setResults(prevResults => {
+          const newResults = [...prevResults]
+          newResults[index] = {
+            ...result,
+            availability: 'taken' as const,
+            brandabilityScore: 0,
+            estimatedValue: 'N/A',
+            searchDemand: 'N/A'
+          }
+          return sortResults(newResults)
+        })
+      }
+    })
+    
+    // Set loading to false after a reasonable timeout
+    setTimeout(() => setLoading(false), 1000)
   }
 
   const handleSearch = (e: React.FormEvent) => {

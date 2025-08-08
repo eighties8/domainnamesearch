@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dns from 'dns'
-import { promisify } from 'util'
+import { promises as dns } from 'dns'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -10,70 +9,70 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Domain parameter is required' }, { status: 400 })
   }
 
-  // Use a more reliable approach - check if domain exists in DNS hierarchy
+  console.log('=== API CALL START ===')
+  console.log('Checking domain:', domain)
+
   try {
-    // Try to resolve A records with timeout
-    const aRecords = await Promise.race([
-      resolve4(domain),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('DNS_TIMEOUT')), 5000)
+    // Simple DNS-based domain availability check
+    const timeout = 5000 // 5 second timeout
+    
+    const result = await Promise.race([
+      dns.resolve4(domain),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('DNS_TIMEOUT')), timeout)
       )
-    ]) as string[]
+    ])
     
-    // Check if the resolved IP is a known parking/hijacking IP
-    const parkingIPs = [
-      '143.244.220.150', // Common parking IP
-      '0.0.0.0',
-      '127.0.0.1'
-    ]
+    // Check if the resolved IP is a parking page
+    const parkingIPs = ['143.244.220.150', '0.0.0.0', '127.0.0.1']
+    const resolvedIPs = Array.isArray(result) ? result : [result]
+    const isParkingIP = resolvedIPs.some(ip => parkingIPs.includes(ip))
     
-    const isParkingIP = aRecords.some((ip: string) => parkingIPs.includes(ip))
+    console.log('Domain:', domain)
+    console.log('Resolved IPs:', resolvedIPs)
+    console.log('Parking IPs list:', parkingIPs)
+    console.log('Is Parking IP:', isParkingIP)
     
+    // If it's a parking IP, check if it's a random domain
     if (isParkingIP) {
-      return NextResponse.json({ 
-        domain, 
-        available: true,
-        message: 'Domain appears to be available (parking IP detected)'
-      })
+      const domainName = domain.split('.')[0]
+      const isRandomDomain = /^[a-z]{6,}$/i.test(domainName)
+      
+      console.log('Domain name:', domainName)
+      console.log('Is random domain:', isRandomDomain)
+      
+      if (isRandomDomain) {
+        return NextResponse.json({ 
+          domain, 
+          available: true,
+          message: 'Domain appears to be available (parking IP detected for random domain)'
+        })
+      }
     }
     
-    // If we get here, domain has real A records and is taken
+    // If DNS resolution succeeds, domain is taken
     return NextResponse.json({ 
       domain, 
       available: false,
-      message: 'Domain is already registered (has A records)'
+      message: 'Domain is already registered (DNS resolution successful)'
     })
+    
   } catch (error: any) {
-    // Handle timeout specifically
-    if (error.message === 'DNS_TIMEOUT') {
-      return NextResponse.json({ 
-        domain, 
-        available: false,
-        message: 'DNS lookup timed out - assuming taken'
-      })
-    }
-    
-    // If DNS resolution fails, we need to be more careful
-    const tld = domain.split('.').pop()?.toLowerCase()
-    const newerTLDs = ['io', 'app', 'ai', 'dev', 'tech', 'xyz', 'org']
-    
-    if (error.code === 'ENOTFOUND' && newerTLDs.includes(tld || '')) {
-      // For newer TLDs and .org, ENOTFOUND is more likely to mean available
+    // DNS resolution failed - check if it's ENOTFOUND (domain not found)
+    if (error.code === 'ENOTFOUND') {
       return NextResponse.json({ 
         domain, 
         available: true,
-        message: 'Domain appears to be available (no DNS records found)'
+        message: 'Domain is available (DNS resolution failed - ENOTFOUND)'
       })
     }
     
-    // For .com and other established TLDs, be more conservative
-    // Many registered domains don't have websites, so we assume taken
+    // DNS timeout or other error - be conservative and assume taken
+    console.error('DNS error:', error.message)
     return NextResponse.json({ 
       domain, 
       available: false,
       message: 'Domain appears to be registered (DNS lookup failed)'
     })
   }
-}
-
-const resolve4 = promisify(dns.resolve4) 
+} 

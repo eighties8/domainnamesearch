@@ -42,17 +42,8 @@ export default function HomePage() {
   }
 
   const getDomainInfo = async (domain: string) => {
-    try {
-      const response = await fetch(`/api/domainInfo?domain=${domain}`)
-      if (!response.ok) {
-        return null
-      }
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error fetching domain info:', error)
-      return null
-    }
+    // Domain info API removed - return null
+    return null
   }
 
 
@@ -139,7 +130,7 @@ export default function HomePage() {
           brandabilityScore: available ? brandabilityScore : 0,
           estimatedValue: available ? `$${estimatedValue.toLocaleString()}` : 'N/A',
           searchDemand,
-          domainInfo
+          domainInfo: domainInfo || undefined
         }
         
         // Update the specific result in the state

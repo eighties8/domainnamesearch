@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CheckCircleIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { getDomainPrices, DomainPrice, getLastUpdated } from '../lib/priceUtils'
 import { SearchDemand } from '../lib/searchDemandUtils'
@@ -224,9 +224,9 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
             </thead>
             <tbody>
               {domainResults.map((result, index) => (
-                <>
-                  <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
-                                      <td className="py-4 px-4">
+                <React.Fragment key={result.domain}>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <td className="py-4 px-4">
                     {result.availability === 'taken' ? (
                       <div className="flex items-center gap-3">
                         <img 
@@ -285,16 +285,16 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                       </div>
                     )}
                   </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        {getAvailabilityIcon(result.availability)}
-                        <span className={getAvailabilityColor(result.availability)}>
-                          {getAvailabilityText(result.availability)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      {result.availability === 'loading' ? (
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      {getAvailabilityIcon(result.availability)}
+                      <span className={getAvailabilityColor(result.availability)}>
+                        {getAvailabilityText(result.availability)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    {result.availability === 'loading' ? (
                         <span className="text-gray-500 dark:text-gray-400">Loading...</span>
                       ) : (
                         <span className={`font-medium ${
@@ -305,9 +305,9 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           {getLowestPrice(result.domain, result.availability)}
                         </span>
                       )}
-                    </td>
-                    <td className="py-4 px-4">
-                      {result.availability === 'loading' ? (
+                  </td>
+                  <td className="py-4 px-4">
+                    {result.availability === 'loading' ? (
                         <span className="text-gray-500 dark:text-gray-400">Loading...</span>
                       ) : (
                         <span className={`font-medium ${
@@ -318,9 +318,9 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           {getPriceRange(result.domain, result.availability)}
                         </span>
                       )}
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
+                  </td>
+                  <td className="py-4 px-4">
+                    <button
                         onClick={() => toggleExpansion(result.domain)}
                         disabled={result.availability === 'taken'}
                         className={`flex items-center gap-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 border-2 ${
@@ -336,8 +336,8 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                           <ChevronDownIcon className="w-4 h-4" />
                         )}
                       </button>
-                    </td>
-                  </tr>
+                  </td>
+                </tr>
                   {/* Expanded content for this row */}
                   {expandedDomain === result.domain && (
                     <tr>
@@ -385,7 +385,7 @@ export default function DomainResultsTable({ domainResults }: DomainResultsTable
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
